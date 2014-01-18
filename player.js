@@ -1,5 +1,7 @@
 var Player = function(startPlace) {
   this.place = startPlace;
+  this.objects = [];
+  this.states = [];
 };
 
 Player.prototype.move = function(json, toPlace) {

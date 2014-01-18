@@ -21,6 +21,28 @@ Util.find = function(collection, attributes) {
   }
 };
 
+Util.findWithRequirements = function(collection, player) {
+  if (collection === undefined || player.place === undefined || player.objects === undefined || player.states === undefined) return;
+  
+  var meetRequirements = function(playerItems, gameItems) {
+    if (typeof playerItems === 'string' && typeof gameItems === 'string')
+      return playerItems === gameItems;
+      
+    if (gameItems === undefined)
+      return true;
+      
+    return (gameItems !== undefined && gameItems.filter(function(x) { return playerItems.indexOf(x) < 0 }).length === 0);
+  };
+  
+  for (var i = 0; i < collection.length; i++) {
+    var item = collection[i];
+    
+    if (item.requirements === undefined) return item;
+    
+    if (meetRequirements(player.place, item.requirements.place) && meetRequirements(player.objects, item.requirements.objects) && meetRequirements(player.states, item.requirements.states)) return item;
+  }
+};
+
 Util.showText = function(json, text) {
     var refRegExp = new RegExp(Util.refRegExp, 'g');
     var refRegExp_nonGreedy = new RegExp(Util.refRegExp);

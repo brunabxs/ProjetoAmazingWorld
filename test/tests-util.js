@@ -181,3 +181,80 @@ test( "Util.showText with unknown reference id", function() {
     equal(err, 'Element could not be found :: objects with id idobj2');
   }
 });
+
+test( "Util.findWithRequirements one scenario with no requirements", function() {
+  var json = {places:[{id:'id1', name:'place1', scenarios:[{text:'scenario1'}]}]};
+  var player = new Player('id1');
+  
+  deepEqual(Util.findWithRequirements(json.places[0].scenarios, player), {text:'scenario1'});
+});
+
+test( "Util.findWithRequirements one scenario with not met requirements", function() {
+  var json = {places:[{id:'id1', name:'place1', scenarios:[{text:'scenario1', requirements:{objects:['obj1']}}]}]};
+  var player = new Player('id1');
+  
+  deepEqual(Util.findWithRequirements(json.places[0].scenarios, player), undefined);
+});
+
+test( "Util.findWithRequirements one scenario with met requirements", function() {
+  var json = {places:[{id:'id1', name:'place1', scenarios:[{text:'scenario1', requirements:{objects:['obj1']}}]}]};
+  var player = new Player('id1');
+  player.objects = ['obj1'];
+  
+  deepEqual(Util.findWithRequirements(json.places[0].scenarios, player), {text:'scenario1', requirements:{objects:['obj1']}});
+});
+
+test( "Util.findWithRequirements two scenarios one with met requirements (with object requirement)", function() {
+  var json = {places:[{id:'id1', name:'place1', scenarios:[{text:'scenario1', requirements:{objects:['obj1']}}, {text:'scenario1'}]}]};
+  var player = new Player('id1');
+  
+  player.objects = ['obj1'];
+  deepEqual(Util.findWithRequirements(json.places[0].scenarios, player), {text:'scenario1', requirements:{objects:['obj1']}});
+});
+
+test( "Util.findWithRequirements two scenarios one with met requirements (with no requirement)", function() {
+  var json = {places:[{id:'id1', name:'place1', scenarios:[{text:'scenario1'}, {text:'scenario1', requirements:{objects:['obj1']}}]}]};
+  var player = new Player('id1');
+
+  deepEqual(Util.findWithRequirements(json.places[0].scenarios, player), {text:'scenario1'});
+});
+
+test( "Util.findWithRequirements two scenarios one with met requirements by order", function() {
+  var json = {places:[{id:'id1', name:'place1', scenarios:[{text:'scenario1'}, {text:'scenario1', requirements:{objects:['obj1']}}]}]};
+  var player = new Player('id1');
+  
+  player.objects = ['obj1'];
+  deepEqual(Util.findWithRequirements(json.places[0].scenarios, player), {text:'scenario1'});
+});
+
+test( "Util.findWithRequirements scenarios with different requirements", function() {
+  var scenarios = [];
+  scenarios[0] = {text:'scenario0', requirements:{objects:['obj1'], states:['st1'], place:'place1'}};
+  scenarios[1] = {text:'scenario1', requirements:{objects:['obj1'], states:['st1']}};
+  scenarios[2] = {text:'scenario2', requirements:{states:['st1'], place:'place1'}};
+  scenarios[3] = {text:'scenario3', requirements:{objects:['obj1'], place:'place1'}};
+  scenarios[4] = {text:'scenario4', requirements:{objects:['obj1']}};
+  scenarios[5] = {text:'scenario5', requirements:{states:['st1']}};
+  scenarios[6] = {text:'scenario6', requirements:{place:'place1'}};
+  scenarios[7] = {text:'scenario7'};
+  
+  var json = {places:[{id:'id1', name:'place1', scenarios:scenarios}]};
+  
+  var player = new Player('place1');
+  deepEqual(Util.findWithRequirements(json.places[0].scenarios, player), scenarios[6]);
+
+  player.objects = ['obj2'];
+  player.states = ['st1'];
+  deepEqual(Util.findWithRequirements(json.places[0].scenarios, player), scenarios[2]);
+  
+  player.objects = ['obj1'];
+  player.states = ['st0', 'st1'];
+  deepEqual(Util.findWithRequirements(json.places[0].scenarios, player), scenarios[0]);
+
+  player = new Player('place2');
+  deepEqual(Util.findWithRequirements(json.places[0].scenarios, player), scenarios[7]);
+  
+  player.objects = [];
+  player.states = ['st0', 'st1'];
+  deepEqual(Util.findWithRequirements(json.places[0].scenarios, player), scenarios[5]);
+});
