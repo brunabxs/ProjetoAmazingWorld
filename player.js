@@ -12,3 +12,14 @@ Player.prototype.move = function(json, toPlace) {
   else
     throw 'Cannot move';
 };
+
+Player.prototype.showScenario = function(json) {
+  var playerPlace = Util.find(json.places, {id:this.place});
+  
+  var scenario = Util.findWithRequirements(playerPlace.scenarios, this);
+  
+  if (scenario === undefined)
+    throw 'Cannot find scenario';
+    
+  return Util.showText(json, scenario.text);
+};
