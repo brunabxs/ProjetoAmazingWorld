@@ -138,3 +138,46 @@ test( "Util.retrieveActionParams same actions with two parameter and both with d
     equal(err, 'Actions did not match :: place3 does not belong to objects');
   }
 });
+
+test( "Util.showText without reference", function() {
+  equal(Util.showText({}, 'a description'), 'a description');
+});
+
+test( "Util.showText with place reference", function() {
+  var json = {places:[{id:'id1', name:'place1'}]};
+  equal(Util.showText(json, 'a description of @places.id1@'), 'a description of [place1]');
+});
+
+test( "Util.showText with object reference", function() {
+  var json = {objects:[{id:'id1', name:'obj1'}]};
+  equal(Util.showText(json, 'a description of @objects.id1@'), 'a description of [obj1]');
+});
+
+test( "Util.showText with multiple references", function() {
+  var json = {objects:[{id:'idobj1', name:'obj1'}], places:[{id:'id1', name:'place1'}]};
+  equal(Util.showText(json, 'a description of @objects.idobj1@ and @places.id1@'), 'a description of [obj1] and [place1]');
+});
+
+test( "Util.showText with unknown reference type", function() {
+  try {
+    Util.showText({}, 'a description of @states.id1@');
+    ok(false, 'Expected exception');
+  }
+  catch(err) {
+    ok(true);
+    equal(err, 'Element could not be found :: states with id id1');
+  }
+});
+
+test( "Util.showText with unknown reference id", function() {
+  var json = {objects:[{id:'idobj1', name:'obj1'}]};
+  
+  try {
+    Util.showText(json, 'a description of @objects.idobj2@');
+    ok(false, 'Expected exception');
+  }
+  catch(err) {
+    ok(true);
+    equal(err, 'Element could not be found :: objects with id idobj2');
+  }
+});

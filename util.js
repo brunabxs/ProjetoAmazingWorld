@@ -1,6 +1,7 @@
 var Util = Util || {};
 
-Util.typeRegExp = new RegExp('@([^@]*)@', 'g');
+Util.typeRegExp = '@([^@]*)@';
+Util.refRegExp = '@([^\.]*)\.([^@]*)@';
 
 Util.find = function(collection, attributes) {
   if (collection === undefined || attributes === undefined) return;
@@ -20,6 +21,35 @@ Util.find = function(collection, attributes) {
   }
 };
 
+Util.showText = function(json, text) {
+    var refRegExp = new RegExp(Util.refRegExp, 'g');
+    var refRegExp_nonGreedy = new RegExp(Util.refRegExp);
+    
+    var names = [];
+    
+    var match = refRegExp.exec(text);
+    while (match !== null) {
+        var item = Util.find(json[match[1]], {id:match[2]});
+        if (item === undefined) {
+            throw 'Element could not be found :: ' + match[1] + ' with id ' + match[2];
+        }
+        
+        names.push('[' + item.name + ']');
+        match = refRegExp.exec(text);
+    }
+    
+    for (var i = 0; i < names.length; i++) {
+        text = text.replace(refRegExp_nonGreedy, names[i]);
+    }
+    
+    Util.emote(text);
+    return text;
+};
+
+Util.emote = function(text) {
+    console.log(text);
+};
+
 Util.retrieveActionParams = function(json, gameAction, playerAction) {
     var actionParams = Util.__findActionParams__(gameAction, playerAction);
     
@@ -36,6 +66,8 @@ Util.retrieveActionParams = function(json, gameAction, playerAction) {
 };
 
 Util.__findActionParams__ = function(gameAction, playerAction) {
+    var typeRegExp = new RegExp(Util.typeRegExp, 'g');
+    
     var gameAction = gameAction.replace(/[ ]*/g, '');
     var playerAction = playerAction.replace(/[ ]*/g, '');
     
@@ -45,7 +77,7 @@ Util.__findActionParams__ = function(gameAction, playerAction) {
     if (types.length === 0 && gameAction !== playerAction)
         throw 'Actions did not match';
     
-    var regexp = new RegExp(gameAction.replace(Util.typeRegExp, '([_a-zA-z0-9]+)'), 'g');
+    var regexp = new RegExp(gameAction.replace(typeRegExp, '([_a-zA-z0-9]+)'), 'g');
     
     var match = regexp.exec(playerAction);
     if (match !== null) {
@@ -61,12 +93,14 @@ Util.__findActionParams__ = function(gameAction, playerAction) {
 };
 
 Util.__findActionParamsTypes__ = function(gameAction) {
-    var types = [];
+    var typeRegExp = new RegExp(Util.typeRegExp, 'g');
     
-    var match = Util.typeRegExp.exec(gameAction);
+    var types = [];
+
+    var match = typeRegExp.exec(gameAction);
     while (match !== null) {
         types.push(match[1]);
-        match = Util.typeRegExp.exec(gameAction);
+        match = typeRegExp.exec(gameAction);
     }
     
     return types;
