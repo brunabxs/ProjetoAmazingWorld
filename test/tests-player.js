@@ -67,3 +67,34 @@ test( "Player.showScenario without a scenario throws exception 'Cannot find scen
     equal(err, 'Cannot find scenario');
   }
 });
+
+test( "Player.findAction with no actions for player", function() {
+  var player = new Player();
+  equal(player.__findAction__('go to place1'), false);
+});
+
+test( "Player.findAction with one action for player without match", function() {
+  var player = new Player();
+  player.actions.push('go to place1');
+  equal(player.__findAction__('go to place2'), false);
+});
+
+test( "Player.findAction with one action for player with match", function() {
+  var player = new Player();
+  player.actions.push('go to place1');
+  equal(player.__findAction__('go to place1'), true);
+});
+
+test( "Player.findAction with two equal actions for player with match", function() {
+  var player = new Player();
+  player.actions.push('go to place1');
+  player.actions.push('go to place1');
+  equal(player.__findAction__('go to place1'), true);
+});
+
+test( "Player.findAction with two different actions for player with match", function() {
+  var player = new Player();
+  player.actions.push('go to place1');
+  player.actions.push('go to place2');
+  equal(player.__findAction__('go to place2'), true);
+});

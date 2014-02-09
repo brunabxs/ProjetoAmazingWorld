@@ -2,6 +2,11 @@ var Player = function(startPlace) {
   this.place = startPlace;
   this.objects = [];
   this.states = [];
+  this.actions = [];
+};
+
+Player.prototype.__findAction__ = function(action) {
+  return this.actions.indexOf(action) >= 0;
 };
 
 Player.prototype.move = function(json, toPlace) {
